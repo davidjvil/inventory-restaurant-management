@@ -1,0 +1,69 @@
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { supabase } from '@/app/lib/supabase';
+import { Input } from '@/app/components/Input';
+import { Button } from '@/app/components/Button';
+import { Toast } from '@/app/components/Toast';
+import { useToast } from '@/app/hooks/useToast';
+import { COLORS } from '@/app/constants/colors';
+
+export default function AddVendorScreen() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    contact: '',
+    delivery_date: '',
+    order_dates: '',
+    address: '',
+  });
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.contact || !form.delivery_date) {
+      toast.error('Name, contact, and delivery date are required');
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.from('master_vendors').insert({
+      organization_id: user?.organization_id,
+      name: form.name,
+      contact: form.contact,
+      delivery_date: form.delivery_date,
+      order_dates: form.order_dates,
+      address: form.address,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      toast.error('Failed to add vendor');
+    } else {
+      toast.success('Vendor added successfully');
+      setTimeout(() => router.back(), 1500);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Toast visible={toast.visible} message={toast.message} type={toast.type} onHide={toast.hide} />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Input label="Vendor Name *" value={form.name} onChangeText={(text) => setForm({ ...form, name: text })} />
+        <Input label="Contact *" value={form.contact} onChangeText={(text) => setForm({ ...form, contact: text })} />
+        <Input label="Delivery Date *" value={form.delivery_date} onChangeText={(text) => setForm({ ...form, delivery_date: text })} placeholder="e.g., Monday" />
+        <Input label="Order Dates" value={form.order_dates} onChangeText={(text) => setForm({ ...form, order_dates: text })} placeholder="e.g., Tuesday, Thursday" />
+        <Input label="Address" value={form.address} onChangeText={(text) => setForm({ ...form, address: text })} multiline />
+        <Button title="Add Vendor" onPress={handleSubmit} loading={loading} fullWidth />
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background },
+  content: { padding: 16, gap: 16 },
+});
