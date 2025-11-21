@@ -12,7 +12,7 @@ import { useToast } from '@/app/hooks/useToast';
 
 export default function OrganizationScreen() {
   const router = useRouter();
-  const { error, success } = useToast();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -27,15 +27,15 @@ export default function OrganizationScreen() {
 
   const validateForm = () => {
     if (!formData.name || formData.name.length < 2) {
-      error('Organization name must be at least 2 characters');
+      showToast('Organization name must be at least 2 characters', 'error');
       return false;
     }
     if (!formData.phone || formData.phone.length < 10) {
-      error('Please enter a valid phone number');
+      showToast('Please enter a valid phone number', 'error');
       return false;
     }
     if (!formData.address || formData.address.length < 5) {
-      error('Please enter a valid address');
+      showToast('Please enter a valid address', 'error');
       return false;
     }
     return true;
@@ -58,13 +58,13 @@ export default function OrganizationScreen() {
 
       if (error) throw error;
 
-      success('Organization created successfully!');
+      showToast('Organization created successfully!', 'success');
       router.push({
         pathname: '/(auth)/signup/create-account',
         params: { organizationId: data.id, isNewOrg: 'true' },
       });
     } catch (error: any) {
-      error(error.message || 'Failed to create organization');
+      showToast(error.message || 'Failed to create organization', 'error');
     } finally {
       setLoading(false);
     }
