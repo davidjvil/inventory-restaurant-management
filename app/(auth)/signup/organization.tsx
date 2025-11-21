@@ -51,7 +51,6 @@ export default function OrganizationScreen() {
         business_type: formData.businessType,
         phone: formData.phone,
         address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        number_of_locations: formData.numberOfLocations,
         subscription_tier: 'trial',
       }).select().single();
 
