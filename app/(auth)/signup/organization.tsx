@@ -53,7 +53,6 @@ export default function OrganizationScreen() {
         address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         number_of_locations: formData.numberOfLocations,
         subscription_tier: 'trial',
-        subscription_status: 'active',
       }).select().single();
 
       if (error) throw error;
