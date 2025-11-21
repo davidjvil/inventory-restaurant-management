@@ -12,7 +12,7 @@ import { useToast } from '@/app/hooks/useToast';
 
 export default function OrganizationScreen() {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { error, success } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -27,15 +27,15 @@ export default function OrganizationScreen() {
 
   const validateForm = () => {
     if (!formData.name || formData.name.length < 2) {
-      showToast('Organization name must be at least 2 characters', 'error');
+      error('Organization name must be at least 2 characters');
       return false;
     }
     if (!formData.phone || formData.phone.length < 10) {
-      showToast('Please enter a valid phone number', 'error');
+      error('Please enter a valid phone number');
       return false;
     }
     if (!formData.address || formData.address.length < 5) {
-      showToast('Please enter a valid address', 'error');
+      error('Please enter a valid address');
       return false;
     }
     return true;
@@ -58,13 +58,13 @@ export default function OrganizationScreen() {
 
       if (error) throw error;
 
-      showToast('Organization created successfully!', 'success');
+      success('Organization created successfully!');
       router.push({
         pathname: '/(auth)/signup/create-account',
         params: { organizationId: data.id, isNewOrg: 'true' },
       });
     } catch (error: any) {
-      showToast(error.message || 'Failed to create organization', 'error');
+      error(error.message || 'Failed to create organization');
     } finally {
       setLoading(false);
     }
@@ -119,4 +119,5 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', color: COLORS.text.primary, marginBottom: 8, marginTop: 16 },
   pickerContainer: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.card },
 });
+
 

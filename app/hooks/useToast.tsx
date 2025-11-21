@@ -23,6 +23,7 @@ export function useToast() {
     type,
     show,
     hide,
+    showToast: show,
     success: (msg: string) => show(msg, 'success'),
     error: (msg: string) => show(msg, 'error'),
     warning: (msg: string) => show(msg, 'warning'),
