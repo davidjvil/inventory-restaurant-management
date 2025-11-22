@@ -56,6 +56,20 @@ export default function OrganizationScreen() {
 
       if (error) throw error;
 
+      // Update user's organization_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && data) {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ organization_id: data.id })
+          .eq('id', user.id);
+        
+        if (updateError) {
+          console.error('Failed to update user organization_id:', updateError);
+          throw new Error('Failed to link user to organization');
+        }
+      }
+
       showToast('Organization created successfully!', 'success');
       router.push({
         pathname: '/(auth)/signup/create-account',
