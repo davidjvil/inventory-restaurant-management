@@ -74,24 +74,11 @@ export default function CreateAccountScreen() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to create user');
 
-      // Create user profile
-      const { error: profileError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        organization_id: organizationId,
-        email: formData.email,
-        full_name: `${formData.firstName} ${formData.lastName}`,
-        phone: formData.phone || null,
-        role: isNewOrg ? 'admin' : 'user',
-        theme_preference: 'auto',
-        notification_preferences: { push: true, email: true },
-        terms_accepted: true,
-      });
 
-      if (profileError) throw profileError;
-
+      // User profile is automatically created by database trigger
+      // No manual profile creation needed
       showToast('Account created successfully!', 'success');
-      router.replace('/(tabs)');
-    } catch (error: any) {
+      router.push('/signup/organization');    } catch (error: any) {
       showToast(error.message || 'Failed to create account', 'error');
     } finally {
       setLoading(false);
