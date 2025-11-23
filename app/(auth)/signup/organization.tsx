@@ -56,12 +56,11 @@ export default function OrganizationScreen() {
 
       if (error) throw error;
 
-      // Update user's organization_id
-      const { data: { user } } = await supabase.auth.getUser();
+      // Update user's organization_id and set as admin (first user)      const { data: { user } } = await supabase.auth.getUser();
       if (user && data) {
         const { error: updateError } = await supabase
           .from('users')
-          .update({ organization_id: data.id })
+          .update({ organization_id: data.id , role: 'admin' })
           .eq('id', user.id);
         
         if (updateError) {
