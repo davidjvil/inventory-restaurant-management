@@ -45,7 +45,6 @@ export default function OrganizationScreen() {
     if (!validateForm()) return;
 
     setLoading(true);
-    try {
       const { data, error } = await supabase.from('organizations').insert({
         name: formData.name,
         business_type: formData.businessType,
@@ -75,11 +74,6 @@ export default function OrganizationScreen() {
         pathname: '/(auth)/signup/create-account',
         params: { organizationId: data.id, isNewOrg: 'true' },
       })
-    } catch (error: any) {
-      showToast(error.message || 'Failed to create organization', 'error');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
