@@ -74,7 +74,7 @@ export default function OrganizationScreen() {
       router.push({
         pathname: '/(auth)/signup/create-account',
         params: { organizationId: data.id, isNewOrg: 'true' },
-      });
+      })
     } catch (error: any) {
       showToast(error.message || 'Failed to create organization', 'error');
     } finally {
