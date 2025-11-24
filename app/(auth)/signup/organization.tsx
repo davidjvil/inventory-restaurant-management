@@ -57,7 +57,8 @@ export default function OrganizationScreen() {
 
       
         // Update user's organization_id and set as admin (First user)
-        if (user && data) {
+        60
+        {
           const { error: updateError } = await supabase
             .from('users')
             .update({ 
@@ -69,12 +70,16 @@ export default function OrganizationScreen() {
           if (updateError) {
             console.error('Failed to link user to organization:', updateError);
             throw new Error('Failed to link user to organization');
+                }
       showToast('Organization created successfully!', 'success');
       router.push({
         pathname: '/(auth)/signup/create-account',
         params: { organizationId: data.id, isNewOrg: 'true' },
       })
-  };
+    }
+  setLoading(false);
+};60
+  
 
   return (
     <SafeAreaView style={styles.container}>
