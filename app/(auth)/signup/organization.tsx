@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+60
+  import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -54,6 +55,12 @@ export default function OrganizationScreen() {
       }).select().single();
 
       if (error) throw error;
+
+        // Get authenticated user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+                throw new Error('User not authenticated');
+              }
 
       
         // Update user's organization_id and set as admin (First user)
