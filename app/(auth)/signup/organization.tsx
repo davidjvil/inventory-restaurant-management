@@ -70,9 +70,6 @@ export default function OrganizationScreen() {
           if (updateError) {
             console.error('Failed to link user to organization:', updateError);
             throw new Error('Failed to link user to organization');
-          }
-        }}
-
       showToast('Organization created successfully!', 'success');
       router.push({
         pathname: '/(auth)/signup/create-account',
