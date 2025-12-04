@@ -2,7 +2,7 @@
   import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@, useLocalSearchParamsexpo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '@/app/lib/supabase';
 import { COLORS } from '@/app/constants/colors';
@@ -13,6 +13,8 @@ import { useToast } from '@/app/hooks/useToast';
 
 export default function OrganizationScreen() {
   const router = useRouter();
+    const params = useLocalSearchParams();
+  const orgType = params.orgType as string;
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -79,11 +81,7 @@ export default function OrganizationScreen() {
             throw new Error('Failed to link user to organization');
                 }
       showToast('Organization created successfully!', 'success');
-      router.push({
-        pathname: '/(auth)/signup/create-account',
-        params: { organizationId: data.id, isNewOrg: 'true' },
-      })
-    }
+                  router.push('/(tabs)');  // Route to main app
   setLoading(false);
 };60
   
@@ -94,8 +92,7 @@ export default function OrganizationScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.progress}>Step 2 of 3</Text>
-      </View>
+        <Text style={styles.progress}>Step 3 of 3</Text>      </View>
 
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Organization Details</Text>
