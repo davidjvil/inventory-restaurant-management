@@ -23,8 +23,7 @@ export default function AccountTypeScreen() {
 
         <TouchableOpacity
           style={styles.card}
-          onPress={() => router.push('/(auth)/signup/organization')}
-        >
+onPress={() => router.push('/(auth)/signup/create-account?orgType=new')}        >
           <View style={styles.iconContainer}>
             <Ionicons name="business" size={40} color={COLORS.primary} />
           </View>
@@ -36,8 +35,7 @@ export default function AccountTypeScreen() {
 
         <TouchableOpacity
           style={styles.card}
-          onPress={() => router.push('/(auth)/signup/join-organization')}
-        >
+        onPress={() => router.push('/(auth)/signup/create-account?orgType=existing')}        >
           <View style={styles.iconContainer}>
             <Ionicons name="people" size={40} color={COLORS.primary} />
           </View>
