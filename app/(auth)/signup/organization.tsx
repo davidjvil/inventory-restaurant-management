@@ -1,9 +1,7 @@
 60
   import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@, useLocalSearchParamsexpo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
+import { useRouter, useLocalSearchParams } from 'expo-router';import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';import { Picker } from '@react-native-picker/picker';
 import { supabase } from '@/app/lib/supabase';
 import { COLORS } from '@/app/constants/colors';
 import { Input } from '@/app/components/Input';
