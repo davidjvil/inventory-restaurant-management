@@ -146,4 +146,114 @@ OR alternatively, collect organization data first but don't save it until after 
 4. Test complete signup flow
 5. Update this file with implementation details
 
+### [Dec 4, 2025 - 9:00 AM] - IMPLEMENTATION: Reordering Signup Steps to Fix Authentication Issue
+
+#### IMPLEMENTATION DECISION
+**Chosen Solution:** Option 1 - Reorder the Steps
+**Reason:** This provides the cleanest, most logical flow and prevents future confusion.
+
+#### NEW FLOW DESIGN
+**Step 1:** Choose account type (Create New Organization vs Join Existing) - NO CHANGE
+**Step 2:** Create user account (email, password, name) - MOVED FROM STEP 3
+**Step 3:** Create organization details - MOVED FROM STEP 2
+
+This ensures the user is authenticated BEFORE attempting to create an organization.
+
+#### FILES TO BE MODIFIED
+1. `app/(auth)/signup/account-type.tsx` - Update routing to go to create-account
+2. `app/(auth)/signup/create-account.tsx` - Becomes Step 2, stores org choice in state
+3. `app/(auth)/signup/organization.tsx` - Becomes Step 3, creates org with authenticated user
+
+#### DETAILED CHANGE ANALYSIS
+
+**FILE 1: account-type.tsx**
+- CHANGE: Route from "Create New Organization" button
+- OLD: `router.push('/signup/organization')` 
+- NEW: `router.push('/signup/create-account?orgType=new')`
+- RISK: None - just changing navigation
+- REASON: Need to collect user credentials first before org details
+
+**FILE 2: create-account.tsx (Now Step 2)**
+- CHANGE 1: Update step indicator
+  - OLD: "Step 3 of 3"
+  - NEW: "Step 2 of 3"
+  - RISK: None - cosmetic
+  
+- CHANGE 2: Accept orgType param from URL
+  - ADD: `const orgType = params.orgType as string;`
+  - RISK: None - just reading param
+  
+- CHANGE 3: Store orgType to pass to next step
+  - KEEP: User creation logic (auth.signUp)
+  - ADD: Pass orgType to organization page after success
+  - OLD: `router.push('/signup/organization')`
+  - NEW: `router.push('/signup/organization?isNewOrg=' + (orgType === 'new'))`
+  - RISK: Low - organization.tsx already reads isNewOrg param
+  
+- CHANGE 4: Remove organizationId param handling
+  - DELETE: Lines that reference `organizationId` from params
+  - REASON: Organization doesn't exist yet at this step
+  - RISK: Low - this param wasn't being used properly anyway
+
+**FILE 3: organization.tsx (Now Step 3)**  
+- CHANGE 1: Update step indicator
+  - OLD: "Step 2 of 3"
+  - NEW: "Step 3 of 3"
+  - RISK: None - cosmetic
+  
+- CHANGE 2: Keep organization creation logic
+  - KEEP: All form validation
+  - KEEP: Database insert for organization
+  - KEEP: Getting authenticated user via `supabase.auth.getUser()`
+  - REASON: NOW the user IS authenticated because they created account in Step 2
+  - RISK: **CRITICAL - This should now work!** User exists, can link org to user
+  
+- CHANGE 3: Update success routing
+  - OLD: `router.push('/signup/create-account')` (circular!)
+  - NEW: `router.push('/(tabs)')`  or `router.push('/dashboard')`
+  - REASON: After org is created, signup is complete - go to main app
+  - RISK: Low - need to ensure main app route exists
+
+- CHANGE 4: Update user-organization linking
+  - KEEP: Logic that updates user record with organization_id
+  - KEEP: Setting user role to 'admin'
+  - RISK: **IMPORTANT** - Need to verify `users` table schema has org_id field
+  
+#### POTENTIAL ISSUES & MITIGATIONS
+
+**Issue 1: Database Schema**
+- CONCERN: Does `users` table have `organization_id` column?
+- MITIGATION: Will check Supabase schema before proceeding
+- IF MISSING: Need to add migration or handle differently
+
+**Issue 2: Join Existing Organization Flow**
+- CONCERN: This fix only handles "Create New Organization" path
+- STATUS: Need to review join-organization.tsx separately
+- NOTE: May have similar issues
+
+**Issue 3: User Profile Creation**
+- CURRENT: create-account.tsx comment says "User profile is automatically created by database trigger"
+- CONCERN: Does trigger create entry in `users` table?
+- MITIGATION: Will verify trigger exists in Supabase
+
+**Issue 4: Route Navigation After Signup**
+- CONCERN: What is the correct route after signup completes?
+- OPTIONS: `/(tabs)`, `/dashboard`, `/home`
+- MITIGATION: Will check routing structure before final commit
+
+#### IMPLEMENTATION ORDER
+1. Check Supabase schema for users table structure
+2. Modify account-type.tsx routing
+3. Modify create-account.tsx (Step 2 changes)
+4. Modify organization.tsx (Step 3 changes)
+5. Test complete flow on localhost
+6. Commit with detailed message
+7. Provide git pull command to David
+
+---
+
+**STATUS: Ready to implement changes**
+**NEXT: Checking Supabase schema...**
+
+
 ---
