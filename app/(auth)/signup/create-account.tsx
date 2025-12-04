@@ -12,9 +12,8 @@ export default function CreateAccountScreen() {
   const router = useRouter();
   const { showToast } = useToast();
   const params = useLocalSearchParams();
-  const organizationId = params.organizationId as string;
-  const isNewOrg = params.isNewOrg === 'true';
-  
+  const orgType = params.organizationId as string;
+  const isNewOrg = orgType === 'new';  
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -78,8 +77,7 @@ export default function CreateAccountScreen() {
       // User profile is automatically created by database trigger
       // No manual profile creation needed
       showToast('Account created successfully!', 'success');
-      router.push('/signup/organization');    } catch (error: any) {
-      showToast(error.message || 'Failed to create account', 'error');
+    router.push(`/signup/organization?orgType=${orgType}`);  // Route to organization with orgType      showToast(error.message || 'Failed to create account', 'error');
     } finally {
       setLoading(false);
     }
@@ -95,7 +93,7 @@ export default function CreateAccountScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.progress}>Step 3 of 3</Text>
+        <Text style={styles.progress}>Step 2 of 3</Text>
       </View>
 
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
