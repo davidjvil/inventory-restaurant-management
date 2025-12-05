@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -74,6 +75,7 @@ export default function OrganizationScreen() {
           if (updateError) {
             console.error('Failed to link user to organization:', updateError);
             throw new Error('Failed to link user to organization');
+                }
                 }
       showToast('Organization created successfully!', 'success');
                   router.push('/(tabs)');  // Route to main app
