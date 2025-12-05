@@ -62,9 +62,6 @@ export default function OrganizationScreen() {
                 throw new Error('User not authenticated');
               }
 
-      
-        // Update user's organization_id and set as admin (First user)
-        60
         {
           const { error: updateError } = await supabase
             .from('users')
@@ -81,7 +78,7 @@ export default function OrganizationScreen() {
       showToast('Organization created successfully!', 'success');
                   router.push('/(tabs)');  // Route to main app
   setLoading(false);
-};60
+};
   
 
   return (
