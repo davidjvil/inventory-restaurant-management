@@ -12,7 +12,7 @@ export default function CreateAccountScreen() {
   const router = useRouter();
   const { showToast } = useToast();
   const params = useLocalSearchParams();
-  const orgType = params.organizationId as string;
+    const orgType = params.orgType as string;
   const isNewOrg = orgType === 'new';  
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -68,6 +68,13 @@ export default function CreateAccountScreen() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+              options: {
+        data: {
+          full_name: `${formData.firstName} ${formData.lastName}`,
+          phone: formData.phone || null,
+          terms_accepted: formData.termsAccepted,
+        }
+      }
       });
 
       if (authError) throw authError;
@@ -77,7 +84,10 @@ export default function CreateAccountScreen() {
       // User profile is automatically created by database trigger
       // No manual profile creation needed
       showToast('Account created successfully!', 'success');
-    router.push(`/signup/organization?orgType=${orgType}`);  // Route to organization with orgType      showToast(error.message || 'Failed to create account', 'error');
+    router.push(`/signup/organization?orgType=${orgType}`);
+        } catch (error: any) {
+    console.error('Signup error:', error);
+    showToast(error.message || 'Database error saving new user', 'error');
     } finally {
       setLoading(false);
     }
