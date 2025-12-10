@@ -688,5 +688,69 @@ During the previous edit session (Step 3 of 3), when adding `useLocalSearchParam
 
 User should test complete end-to-end signup flow and report any remaining issues.
 
+
+---
+
+## [Dec 10, 2025 - 7:00 AM] - CONTINUED SIGNUP FLOW TESTING & UI FIXES
+
+### Issue Being Addressed
+**PROBLEM:** Completing end-to-end signup flow testing and fixing UI inconsistencies
+
+### Changes Made
+
+#### 1. Fixed Business Type Dropdown Height (Commit: b6655dc)
+**File:** `app/(auth)/signup/organization.tsx`
+**Change:** Added `minHeight: 56` to `pickerContainer` style
+**Reason:** Business Type dropdown was noticeably smaller than other input fields, creating visual inconsistency
+**Code:**
+```typescript
+pickerContainer: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.card, minHeight: 56 },
+```
+
+#### 2. Completed Step 2 - Account Creation Testing
+**Status:** ✅ SUCCESS
+- Successfully created test user account
+- Email: david+test@parlorfl.com
+- User metadata properly stored (full_name, phone, terms_accepted)
+- Supabase trigger `handle_new_user` executed correctly
+- User record created in public.users table with role='admin'
+- Navigated successfully to Step 3 (Organization Details)
+
+#### 3. Filled Organization Details Form (Step 3)
+**Test Data Used:**
+- Organization Name: "Test Restaurant Co"
+- Business Type: "Restaurant"
+- Phone: "5551234567"
+- Address: "123 Test Street"
+- City: "Tampa"
+- State: "FL"
+- Zip Code: "33602"
+
+#### 4. NEW ERROR DISCOVERED - User Not Authenticated
+**Error:** "Uncaught Error: User not authenticated"
+**Location:** `app/(auth)/signup/organization.tsx` - `handleSubmit` function
+**Issue:** After signup, user session is not persisting to organization creation step
+**Root Cause:** The `supabase.auth.getUser()` call returns no user, indicating session not established
+**Next Steps:** Need to investigate session management after signup in create-account.tsx
+
+### Verification Steps Completed
+1. ✅ Verified user created in Supabase auth.users table
+2. ✅ Verified user metadata (full_name, phone) stored in raw_user_meta_data
+3. ✅ Verified public.users record created with correct role
+4. ✅ Verified form navigation from Step 2 → Step 3
+5. ❌ Organization creation failed due to authentication issue
+
+### Test Account Credentials (For Reference)
+- **Email:** david+test@parlorfl.com
+- **Name:** David Test
+- **Phone:** 5551234567
+- **Password:** Test123!@# (Strong)
+- **User ID:** 66e9a5ed-7af5-4eda-8538-a10c49c9ebe0
+- **Status:** Waiting for email verification
+
+**Next Action Required:**
+User should restart Expo server to see UI fix for Business Type dropdown height, then debug authentication session persistence issue.
+
+---
 ---
 ---
