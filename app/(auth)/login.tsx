@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/app/contexts/AuthContext';
 import { Input } from '@/app/components/Input';
 import { Button } from '@/app/components/Button';
 import { COLORS } from '@/app/constants/colors';
 import { IMAGES } from '@/app/constants/images';
+import { supabase } from '@/app/config/supabase';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -22,7 +22,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      await signIn(email, password);
+      await supabase.auth.signInWithPassword({ email, password });
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
