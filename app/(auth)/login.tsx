@@ -6,6 +6,7 @@ import { Button } from '@/app/components/Button';
 import { COLORS } from '@/app/constants/colors';
 import { IMAGES } from '@/app/constants/images';
 import { supabase } from '@/app/lib/supabase';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
