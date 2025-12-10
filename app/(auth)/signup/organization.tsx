@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: 'bold', color: COLORS.text.primary, marginBottom: 8 },
   subtitle: { fontSize: 16, color: COLORS.text.secondary, marginBottom: 24 },
   label: { fontSize: 14, fontWeight: '600', color: COLORS.text.primary, marginBottom: 8, marginTop: 16 },
-  pickerContainer: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.card },
+  pickerContainer: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.card , minHeight: 56},
 });
 
 
