@@ -947,3 +947,109 @@ import { supabase } from '@/lib/supabase';
 - User needs to run `git pull origin main` to update local files
 - Verify Expo server auto-reloads after pulling changes
 - Confirm login page renders properly
+
+
+---
+
+## [Dec 11, 2025 - 11:00 PM] - PRODUCT FORM ENHANCEMENT: Option A Implementation (Reorder Threshold Only)
+
+### Issue Being Addressed
+
+User requested product form improvements with specific field requirements:
+- Implemented Option A: Reorder Threshold inventory management (single method)
+- Removed Min Order Amount field per user selection
+- Reordered fields for better UX
+- Updated role permissions
+- Prepared for future dropdown enhancements
+
+### Changes Made
+
+#### File Modified: `app/product/add.tsx` (Commit: [to be added])
+
+**Field Changes:**
+- Added `department` and `vendor` state variables
+- Removed `minOrder` state variable (Option A selected)
+- Renamed `basePrice` → `price`
+- Removed SKU from required validation (only Product Name is required now)
+
+**Field Order (New UX Flow):**
+1. Product Name* (required)
+2. Vendor (optional - text input, dropdown upgrade planned)
+3. Unit (optional)
+4. Price (optional)
+5. Reorder Threshold (optional)
+6. Category (optional)
+7. Department (optional - text input, dropdown upgrade planned)
+8. SKU (optional - no longer required)
+
+**Role Permissions Updated:**
+- Previous: Only Admin could add products
+- Updated: Admin + Shop Manager can add products
+- Code: `if (user?.role === 'admin' || user?.role === 'shop_manager')`
+
+**Database Fields Updated:**
+- `master_products` insert now includes: `department`, `vendor`
+- `store_products` insert: Removed `minimum_order_amount`, kept `reorder_threshold`
+
+### Option A - Reorder Threshold Explanation
+
+**How Reorder Threshold Works:**
+- User sets a threshold number (e.g., 10 units)
+- When inventory quantity falls below this threshold, the system should alert for reordering
+- Simpler single-method inventory management
+- Comparison: Option B (Par Level) would calculate difference between current and desired stock
+
+### Pending Enhancements (Documented for Later)
+
+**Vendor Dropdown + Quick-Create:**
+- Convert Vendor text field to dropdown
+- Pull from `master_vendors` table (org-scoped)
+- Add "+ Create New Vendor" quick-create functionality
+- Ensure org isolation (everything scoped to `organization_id`)
+
+**Department Dropdown + Quick-Create:**
+- Convert Department text field to dropdown
+- Pull from departments table (if exists, or create)
+- Add quick-create functionality
+- Ensure org isolation
+
+**Field Visibility Toggle:**
+- User requested ability to hide unnecessary fields per role/preference
+- Implementation: Settings or per-user configuration
+- Allows organizations to customize visible fields
+
+**User Tutorial:**
+- **IMPORTANT**: Need to create tutorial for new users
+- Tutorial should guide users through:
+  1. Set up Vendors first
+  2. Set up Departments
+  3. Then begin adding Products
+- Tutorial reminder: "We need to set up a tutorial to show them around the app and have them set up vendors, and departments first and then begin adding products. This can be put on the back burner"
+
+### Files Modified
+- `app/product/add.tsx` - Product form enhancements
+
+### Testing Required
+- Test product creation as Admin
+- Test product creation as Shop Manager
+- Test product creation as regular User (should fail with proper error)
+- Verify all fields save correctly to database
+- Test Reorder Threshold logic when integrated with inventory management
+- After `git pull`, restart Metro server and test on localhost
+
+### Notes from Developer
+- Successfully implemented Option A per user selection
+- Field order improved for better UX flow
+- Vendor/Department dropdowns prepared for future enhancement (state variables added)
+- Role permissions expanded to Shop Manager
+- SKU requirement removed - only Product Name is required
+- CHANGELOG updated with full documentation
+
+### Status
+✅ **PRODUCT FORM OPTION A: IMPLEMENTED AND COMMITTED**
+- All code changes completed
+- Commit message: "Update product form - Option A (Reorder Threshold only)"
+- CHANGELOG documentation complete
+- Ready for `git pull` and testing
+
+---
