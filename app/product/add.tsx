@@ -18,6 +18,7 @@ export default function AddProductScreen() {
   const [unit, setUnit] = useState('');
   const [price, setPrice] = useState('');
   const [threshold, setThreshold] = useState('');
+    const [minimumOrderAmount, setMinimumOrderAmount] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -51,6 +52,7 @@ export default function AddProductScreen() {
           product_id: masterProduct.id,
           quantity_on_hand: 0,
           reorder_threshold: parseFloat(threshold) || 0,
+                minimum_order_amount: parseFloat(minimumOrderAmount) || 0,
         });
       }
 
@@ -102,6 +104,14 @@ export default function AddProductScreen() {
         onChangeText={setThreshold}
         keyboardType="numeric"
         placeholder="0"
+
+              <Input
+                        label="Minimum Order Amount"
+                        value={minimumOrderAmount}
+                        onChangeText={setMinimumOrderAmount}
+                        keyboardType="numeric"
+                        placeholder="0"
+                      />
       />
 
       <Input
