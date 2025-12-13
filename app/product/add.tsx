@@ -105,6 +105,7 @@ export default function AddProductScreen() {
         keyboardType="numeric"
         placeholder="0"
 
+
               <Input
                         label="Minimum Order Amount"
                         value={minimumOrderAmount}
@@ -112,7 +113,7 @@ export default function AddProductScreen() {
                         keyboardType="numeric"
                         placeholder="0"
                       />
-      />
+              
 
       <Input
         label="Category"
