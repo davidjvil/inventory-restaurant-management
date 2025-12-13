@@ -1053,3 +1053,32 @@ User requested product form improvements with specific field requirements:
 - Ready for `git pull` and testing
 
 ---
+
+## CURRENT SESSION - December 13, 2025
+
+### Issue Being Addressed
+**PROBLEM:** Syntax error in product/add.tsx - duplicate Input component causing 'Unexpected token' error
+
+### Changes Made
+
+#### COMMIT 1: 'Add Minimum Order Amount field to product form'
+**File:** `app/product/add.tsx`
+- Added `minimumOrderAmount` state variable (line 21)
+- - Added `minimum_order_amount` field to store_products insert (line 55)
+  - - Added Minimum Order Amount Input field to form UI (lines 109-115)
+   
+    - #### COMMIT 2: 'Fix duplicate Input syntax error and properly add Minimum Order Amount field'
+    - **File:** `app/product/add.tsx`
+    - - Fixed syntax error: Removed duplicate/nested Input component
+      - - Properly added Minimum Order Amount Input field after Reorder Threshold and before Category
+        - - Structure now correct: Each Input component properly closed with independent opening/closing tags
+         
+          - ### Technical Details
+          - **Root Cause:** When adding the Minimum Order Amount field in Commit 1, accidentally created a nested/duplicate Input structure that caused a JSX parsing error
+         
+          - **Resolution:** Deleted the malformed duplicate Input element and properly added the Minimum Order Amount Input with correct JSX structure
+         
+          - ### Field Purpose
+          - **Minimum Order Amount:** Specifies the quantity that should be ordered when the reorder threshold is hit. Works in conjunction with Reorder Threshold field.
+         
+          - ---
