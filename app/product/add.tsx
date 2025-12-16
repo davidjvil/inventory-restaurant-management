@@ -19,6 +19,7 @@ export default function AddProductScreen() {
   const [price, setPrice] = useState('');
   const [threshold, setThreshold] = useState('');
     const [minimumOrderAmount, setMinimumOrderAmount] = useState('');
+    const [parLevel, setParLevel] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
