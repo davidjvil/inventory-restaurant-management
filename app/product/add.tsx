@@ -104,7 +104,7 @@ export default function AddProductScreen() {
         onChangeText={setThreshold}
         keyboardType="numeric"
         placeholder="0"
-
+      />
 
               <Input
                         label="Minimum Order Amount"
