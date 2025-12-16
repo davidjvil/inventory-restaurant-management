@@ -1118,4 +1118,56 @@ User requested product form improvements with specific field requirements:
                        5. 5. **Document every change thoroughly in changelog as requested**
                          
                           6. ---
+                          7. 
+                          ## INVENTORY SYSTEM ARCHITECTURE CLARIFICATION - December 16, 2025
+       
+                          ### User Requirements Discussion
+                          Developer wants a dynamic inventory system with THREE different reorder modes to give flexibility.
+       
+                          ### Database Schema - FINAL STRUCTURE
+       
+                          ```sql
+                          store_products:
+                          - store_id (FK to stores - identifies which store)
+                          - product_id (FK to master_products)
+                          - quantity_on_hand (DECIMAL - current inventory PER STORE)
+                          - reorder_threshold (DECIMAL - trigger point/buffer PER STORE)
+                          - minimum_order_amount (DECIMAL - fixed order qty PER STORE)
+                          - par_level (DECIMAL - NEW! desired stock level PER STORE)
+                          ```
+       
+                          ### THE THREE REORDER MODES
+       
+                          #### MODE 1: Fixed Order Amount
+                          **When:** minimum_order_amount > 0
+                          **Logic:** Order a fixed amount when threshold is reached
+       
+                          **Example:** reorder_threshold=10, minimum_order_amount=30 → When stock < 10, order 30
+       
+                          #### MODE 2: Par Level with Buffer (DEVELOPER'S EXAMPLE)
+                          **When:** minimum_order_amount=0 AND reorder_threshold > 0
+                          **Logic:** Use threshold as buffer, calculate order to reach par_level
+       
+                          **Example:** threshold=10, par=15, qty=11 → NO ALERT (above threshold)
+                          **Example:** threshold=10, par=15, qty=9 → ALERT: Order 6 lbs (15-9=6)
+       
+                          #### MODE 3: Pure Par Level (No Buffer)
+                          **When:** minimum_order_amount=0 AND reorder_threshold=0
+                          **Logic:** Order whenever below par_level
+       
+                          **Formula:** Order_Amount = par_level - quantity_on_hand
+       
+                          ### Per-Store Confirmation
+                          - ALL calculations are PER STORE (store_products table)
+                          - - Master Products List (MPL/master_products) contains basic product data only
+                            - - Each store can have DIFFERENT values for same product
+                              - - Queries filter by user.assigned_store_ids[0] automatically
+                               
+                                - ### Implementation Tasks
+                                - 1. Add par_level column to store_products table in Supabase
+                                  2. 2. Update product add/edit forms to include par_level field
+                                     3. 3. Build inventory monitoring logic with mode detection
+                                        4. 4. Create dashboard alerts and status indicators
+                                          
+                                           5. ---
           - ---
