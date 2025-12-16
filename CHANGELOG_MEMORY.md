@@ -5,7 +5,64 @@
 **Developer:** David
 **Project:** Villa Real Group - Inventory Restaurant Management
 
----
+--
+
+## CURRENT SESSION - December 16, 2025
+
+### Task 2: Add Par Level Field to Product Form
+**Status:** ✅ COMPLETED
+
+#### Changes Made:
+1. **Database Schema** (Supabase)
+   - Added `par_level` column to `store_products` table
+   - Type: DECIMAL(10, 2)
+   - Default: 0
+   - Purpose: Store the target inventory level (par level) for each product at each store
+
+2. **Product Form** (app/product/add.tsx)
+   - Added `const [parLevel, setParLevel] = useState('')` state variable
+   - Added Par Level Input field to form UI (after Minimum Order Amount field)
+   - Added `par_level: parseFloat(parLevel) || 0` to database insert statement
+   - Field is optional (not required), numeric keyboard type, placeholder "0"
+
+#### Implementation Details:
+- Par Level represents the ideal/target quantity a store should have on hand
+- Works alongside existing fields (reorder_threshold, minimum_order_amount) for comprehensive inventory management
+- Three inventory management modes supported:
+  1. **Fixed Order Amount**: Uses minimum_order_amount when set > 0
+  2. **Par Level with Buffer**: Uses par_level minus quantity_on_hand, with reorder_threshold as buffer
+  3. **Pure Par Level**: Uses par_level minus quantity_on_hand when minimum_order_amount = 0 and reorder_threshold = 0
+
+#### Database Structure:
+```sql
+ALTER TABLE store_products 
+ADD COLUMN IF NOT EXISTS par_level DECIMAL(10, 2) DEFAULT 0;
+```
+
+#### Form Field Order:
+1. Product Name* (required)
+2. Vendor
+3. Unit
+4. Price
+5. Reorder Threshold
+6. Minimum Order Amount
+7. **Par Level** (NEW)
+8. Category
+9. Department
+10. SKU
+
+#### Testing Notes:
+- Code changes committed to GitHub successfully
+- Database schema updated in Supabase
+- Local development server may require manual reload to reflect changes
+- All three state management modes are now supported in the database structure
+
+#### Next Steps (Task 3):
+- Implement inventory monitoring logic using the three calculation modes
+- Build dashboard alerts for low stock based on par levels
+- Add store-specific inventory calculations
+
+----
 
 ## PURPOSE
 This file serves as a comprehensive memory log for all development changes, debugging sessions, and important decisions made during the development of this application. Every edit, fix, and conversation will be documented here to maintain continuity and prevent losing context.
