@@ -53,6 +53,7 @@ export default function AddProductScreen() {
           quantity_on_hand: 0,
           reorder_threshold: parseFloat(threshold) || 0,
                 minimum_order_amount: parseFloat(minimumOrderAmount) || 0,
+                      par_level: parseFloat(parLevel) || 0,
         });
       }
 
@@ -113,6 +114,14 @@ export default function AddProductScreen() {
                         keyboardType="numeric"
                         placeholder="0"
                       />
+
+            <Input
+        label="Par Level"
+        value={parLevel}
+        onChangeText={setParLevel}
+        keyboardType="numeric"
+        placeholder="0"
+      />
               
 
       <Input
