@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } , Alertfrom 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -30,6 +30,7 @@ export default function OrganizationScreen() {
   const validateForm = () => {
     if (!formData.name || formData.name.length < 2) {
       showToast('Organization name must be at least 2 characters', 'error');
+            Alert.alert('Validation Error', 'Organization name must be at least 2 characters');
       return false;
     }
     if (!formData.phone || formData.phone.length < 10) {
@@ -92,6 +93,10 @@ export default function OrganizationScreen() {
       showToast(
         error instanceof Error ? error.message : 'Failed to create organization',
         'error'
+              Alert.alert(
+        'Organization Creation Failed',
+        error instanceof Error ? error.message : 'Failed to create organization. Please check console for details.'
+      );
       );
     } finally {
         setLoading(false);
