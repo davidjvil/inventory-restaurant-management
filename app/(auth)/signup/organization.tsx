@@ -85,6 +85,10 @@ export default function OrganizationScreen() {
 
       } catch (error) {
       console.error('Organization creation error:', error);
+          console.error('Full error object:', JSON.stringify(error, null, 2));
+          console.error('Error name:', error?.name);
+          console.error('Error message:', error?.message);
+          console.error('Error stack:', error?.stack);
       showToast(
         error instanceof Error ? error.message : 'Failed to create organization',
         'error'
