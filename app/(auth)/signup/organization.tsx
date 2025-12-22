@@ -45,6 +45,8 @@ export default function OrganizationScreen() {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+    
+    try {
 
     setLoading(true);
       const { data, error } = await supabase.from('organizations').insert({
@@ -63,11 +65,11 @@ export default function OrganizationScreen() {
                 throw new Error('User not authenticated');
               }
 
-        {
           const { error: updateError } = await supabase
             .from('users')
             .update({ 
-              organization_id: data[0].id, 
+                        organization_id: data.id,
+              
               role: 'admin' 
             })
             .eq('id', user.id);
@@ -79,10 +81,19 @@ export default function OrganizationScreen() {
                 }
       showToast('Organization created successfully!', 'success');
                   router.push('/(tabs)');  // Route to main app
-  setLoading(false);
+
 };
   
 
+      } catch (error) {
+      console.error('Organization creation error:', error);
+      showToast(
+        error instanceof Error ? error.message : 'Failed to create organization',
+        'error'
+      );
+    } finally {
+        setLoading(false);
+          }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
