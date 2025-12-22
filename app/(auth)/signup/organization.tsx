@@ -78,11 +78,9 @@ export default function OrganizationScreen() {
             console.error('Failed to link user to organization:', updateError);
             throw new Error('Failed to link user to organization');
                 }
-                }
       showToast('Organization created successfully!', 'success');
                   router.push('/(tabs)');  // Route to main app
 
-};
   
 
       } catch (error) {
@@ -94,6 +92,7 @@ export default function OrganizationScreen() {
     } finally {
         setLoading(false);
           }
+      };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
