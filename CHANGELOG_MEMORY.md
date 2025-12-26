@@ -1416,5 +1416,34 @@ User requested product form improvements with specific field requirements:
 **Result:**
 - Import syntax error resolved
 - Alert component properly imported from react-native
+
+### Catch Block Syntax Error Fix
+
+**Commit:** [commit hash] - "CRITICAL FIX: Correct syntax error in organization.tsx catch block"
+
+**Issue:**
+- After adding Alert.alert() for error visibility, syntax error in catch block prevented code execution
+- Line 95 was missing closing parenthesis `)` for `showToast()` function
+- `Alert.alert()` was incorrectly nested inside `showToast()` call
+- Original: `showToast(..., 'error' Alert.alert(...));`
+
+**Fix:**
+- Added missing `);` after `'error'` on line 95 to properly close `showToast()`
+- Removed duplicate `);` that was intended to close the malformed nested structure
+- Now two separate, properly closed statements:
+  - Line 93-96: `showToast(..., 'error');`
+  - Line 97-100: `Alert.alert(...);`
+
+**Result:**
+- Syntax error resolved
+- Catch block can now execute properly
+- Both toast and alert dialogs will display errors to users
+- Organization creation errors will no longer fail silently
+
+**Testing Required:**
+- User needs to run `git pull origin main` to get latest fix
+- Restart Expo development server
+- Test organization creation with filled form
+- Verify error messages display if creation fails
 - Code now compiles without errors
 - Ready to test organization creation with visible error alerts
