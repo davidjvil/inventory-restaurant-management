@@ -93,10 +93,10 @@ export default function OrganizationScreen() {
       showToast(
         error instanceof Error ? error.message : 'Failed to create organization',
         'error'
+    );
               Alert.alert(
         'Organization Creation Failed',
         error instanceof Error ? error.message : 'Failed to create organization. Please check console for details.'
-      );
       );
     } finally {
         setLoading(false);
