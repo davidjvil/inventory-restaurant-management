@@ -6,13 +6,11 @@ import { Button } from '@/app/components/Button';
 import { COLORS } from '@/app/constants/colors';
 import { IMAGES } from '@/app/constants/images';
 import { supabase } from '@/app/lib/supabase';
-import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -23,10 +21,24 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      await supabase.auth.signInWithPassword({ email, password });
+      // SECURITY FIX: Capture auth response and validate before routing
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      // CRITICAL: Check if authentication succeeded
+      if (error) {
+        throw error;
+      }
+      
+      // CRITICAL: Verify we have a valid session and user
+      if (!data.session || !data.user) {
+        throw new Error('Authentication failed - no session created');
+      }
+      
+      // Only navigate to main app if authentication succeeded
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', error.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -46,6 +58,7 @@ export default function LoginScreen() {
           placeholder="your@email.com"
           keyboardType="email-address"
         />
+
         <Input
           label="Password"
           value={password}
@@ -53,6 +66,7 @@ export default function LoginScreen() {
           placeholder="Enter your password"
           secureTextEntry
         />
+
         <Button title="Sign In" onPress={handleLogin} loading={loading} fullWidth />
         <Button 
           title="Create Account" 
