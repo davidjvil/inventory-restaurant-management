@@ -45,10 +45,12 @@ export default function OrganizationScreen() {
   };
 
   const handleSubmit = async () => {
+        console.log('🔥 handleSubmit function called');
     if (!validateForm()) return;
     
     try {
 
+          console.log('🔥 handleSubmit called! Form data:', formData);
     setLoading(true);
       const { data, error } = await supabase.from('organizations').insert({
         name: formData.name,
