@@ -47,6 +47,29 @@ export default function OrganizationScreen() {
   const handleSubmit = async () => {
         console.log('🔥 handleSubmit function called');
     if (!validateForm()) return;
+
+    // Check for duplicate organization name
+    try {
+      const { data: existingOrg, error: checkError } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('name', formData.name)
+        .single();
+
+      if (existingOrg) {
+        showToast('Organization name already exists', 'error');
+        Alert.alert(
+          'Duplicate Organization',
+          'An organization with this name already exists. Please choose a different name.'
+        );
+        return;
+      }
+    } catch (error: any) {
+      // If error is PGRST116 (no rows), that's good - means name is unique
+      if (error?.code !== 'PGRST116') {
+        console.error('Error checking for duplicate organization:', error);
+      }
+    }
     
     try {
 
