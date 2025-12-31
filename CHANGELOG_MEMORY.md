@@ -1944,5 +1944,171 @@ const { error: updateError } = await supabase
 6. Check browser console for errors
 
 **Status:** INVESTIGATION COMPLETE - READY FOR DEBUGGING SESSION
+
+---
+
+## OPTION 3 IMPLEMENTATION - December 31, 2025, 11:00 AM EST
+
+### Task: Prevent Duplicate Organization Names
+
+**User Request:** "Can we make sure that we can't have duplicate companies? Or how do we know the difference"
+
+**Solution Selected:** Option 3 - Comprehensive duplicate prevention (database + app-level)
+
+### Implementation Summary
+
+**Phase 1: Database Cleanup** ✅
+- **Action:** Manually deleted duplicate organizations from Supabase
+- **Results:**
+  - Deleted 2 duplicate rows (Test Restaurant, Parlor Doughnuts First Coast)
+  - Reduced from 7 organizations to 5 unique organizations
+  - **Remaining organizations:**
+    1. Villa Real Goods (44361d0d-64b3-430c-946f-093044b5fa1...)
+    2. Test Restaurant (4b02c97e-a41f-47ec-96b8-57c3b3d558b...)
+    3. Demo Restaurant Group (550e8400-e29b-41d4-a716-446655440000)
+    4. Parlor Doughnuts First Coast (a4851f81-03fc-40ea-bc45-41fe6bf29c25)
+    5. Test Restaurant Co (d68d2445-e745-4641-b578-65a4824e2df0)
+
+**Phase 2: Database Unique Constraint** ✅
+- **Action:** Added unique constraint to organizations table
+- **SQL Command:**
+  ```sql
+  ALTER TABLE public.organizations 
+  ADD CONSTRAINT unique_organization_name UNIQUE (name);
+  ```
+- **Result:** Database now enforces uniqueness at the data layer
+- **Impact:** Prevents duplicate organization names even if app validation is bypassed
+
+**Phase 3: App-Level Validation** ✅
+- **File Modified:** `app/(auth)/signup/organization.tsx`
+- **Commit:** 175742f - "OPTION 3: Add duplicate organization name validation"
+- **Changes Made:**
+  - Added duplicate check before organization creation (line 51-72)
+  - Query organizations table for existing name
+  - Show user-friendly error via toast and Alert dialog
+  - Handle PGRST116 error (no duplicate = good)
+  - Return early if duplicate found
+
+**Code Implementation:**
+```javascript
+// Check for duplicate organization name
+try {
+  const { data: existingOrg, error: checkError } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('name', formData.name)
+    .single();
+
+  if (existingOrg) {
+    showToast('Organization name already exists', 'error');
+    Alert.alert(
+      'Duplicate Organization',
+      'An organization with this name already exists. Please choose a different name.'
+    );
+    return;
+  }
+} catch (error: any) {
+  // If error is PGRST116 (no rows), that's good - means name is unique
+  if (error?.code !== 'PGRST116') {
+    console.error('Error checking for duplicate organization:', error);
+  }
+}
+```
+
+### Benefits of Option 3 Approach
+
+**1. Defense in Depth:**
+- Database constraint prevents duplicates even if app code is bypassed
+- App-level validation provides immediate user feedback
+- Two layers of protection ensure data integrity
+
+**2. User Experience:**
+- Friendly error messages explain the issue clearly
+- Users see "Organization name already exists" immediately
+- No confusing database error messages
+- Can try again with different name without losing form data
+
+**3. Data Integrity:**
+- Unique constraint guarantees no duplicates at database level
+- Works across all clients (web, mobile, API)
+- Survives code changes or bugs in validation logic
+
+### Testing Requirements
+
+**Test 1: Attempt to Create Duplicate Organization**
+1. Pull latest code: `git pull origin main`
+2. Restart Expo server
+3. Try to create organization with existing name (e.g., "Villa Real Goods")
+4. **Expected:** Error message appears, organization not created
+5. **Expected:** Toast shows "Organization name already exists"
+6. **Expected:** Alert dialog explains to choose different name
+
+**Test 2: Create Organization with Unique Name**
+1. Try to create organization with new name (e.g., "New Test Company 2025")
+2. **Expected:** Organization created successfully
+3. **Expected:** User linked to organization
+4. **Expected:** Navigate to main app
+
+**Test 3: Database Constraint Enforcement**
+1. Attempt direct database insert with duplicate name (via Supabase SQL)
+2. **Expected:** Database rejects with unique constraint violation
+3. **Expected:** Error message contains "unique_organization_name"
+
+### Files Modified
+
+**Database:**
+- `public.organizations` table - Added unique constraint on `name` column
+
+**Application Code:**
+- `app/(auth)/signup/organization.tsx` - Added duplicate validation (Commit 175742f)
+
+**Documentation:**
+- `CHANGELOG_MEMORY.md` - Documented Option 3 implementation
+
+### Technical Notes
+
+**Why PGRST116 Error Handling?**
+- Supabase `.single()` query returns PGRST116 when no rows found
+- This error means "name is unique" which is good
+- We catch this specific error code and ignore it
+- All other errors are logged for debugging
+
+**Race Condition Considerations:**
+- Small window between check and insert where duplicate could slip through
+- Database unique constraint catches this edge case
+- App-level validation prevents 99% of duplicate attempts
+- Database constraint provides 100% guarantee
+
+### Status
+
+✅ **OPTION 3 IMPLEMENTATION COMPLETE**
+
+**Completed:**
+1. ✅ Cleaned up duplicate organizations (7 → 5)
+2. ✅ Added database unique constraint  
+3. ✅ Implemented app-level validation
+4. ✅ Committed code changes (175742f)
+5. ✅ Documented in CHANGELOG
+
+**Pending:**
+- ⏳ User testing with duplicate name
+- ⏳ User testing with unique name
+- ⏳ Verify error messages display correctly
+
+**Follow-Up Tasks:**
+- Consider adding organization search/browse before creation
+- Consider case-insensitive name matching ("Villa Real" vs "villa real")
+- Consider trimming whitespace from organization names
+
+### Next Action for User
+
+Pull the latest changes and test the duplicate prevention:
+```bash
+git pull origin main
+npm start
+# Navigate to signup → organization creation
+# Test with existing name (should show error)
+# Test with new name (should succeed)
+```
 - Code now compiles without errors
 - Ready to test organization creation with visible error alerts
