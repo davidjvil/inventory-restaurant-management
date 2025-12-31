@@ -1808,5 +1808,141 @@ User requested product form improvements with specific field requirements:
 - Restart Expo development server
 - Test organization creation with filled form
 - Verify error messages display if creation fails
+
+---
+
+## CURRENT SESSION - December 27, 2025, 12:00 PM EST
+
+### Session Objective
+**Task:** Confirm login functionality is completely operational and test organization creation (signup) flow
+
+### Investigation Findings (Step C: Check Supabase)
+
+**Supabase Database Audit Results:**
+
+1. **Users Table Status:**
+   - ✅ 2 user accounts exist in database
+   - User 1: `david+test@parlorfi.com` (66e9a5ed-7af5-4eda-8538-a10c4...)
+   - User 2: `davidjvil+testing@hotmail.com` (d8614d2d-324e-488d-86ea-dc09...)
+   - ❌ BOTH users have `organization_id: NULL`
+   - ❌ Signup flow incomplete - users created but not linked to organizations
+
+2. **Organizations Table Status:**
+   - ✅ 7 organizations exist in database:
+     - Villa Real Goods (44361d0d-64b3-430c-946f-093044b5fa1...)
+     - Test Restaurant (4b02c97e-a41f-47ec-96b8-57c3b3d558b...)
+     - Test Restaurant (52fe783e-7373-4d97-91b2-77eaf98ba862)
+     - Demo Restaurant Group (550e8400-e29b-41d4-a716-446655440000)
+     - Parlor Doughnuts First Coast (a4851f81-03fc-40ea-bc45-41fe6bf29c25)
+     - Parlor Doughnuts First Coast (d36f2915-4f50-416c-bbb5-72098f34a5a4)
+     - Test Restaurant Co (d68d2445-e745-4641-b578-65a4824e2df0)
+   - ✅ Organization creation IS working
+   - ❌ User-to-organization linking is FAILING
+
+### Root Cause Analysis
+
+**The Core Issue:** Organization creation succeeds, but the user update step (linking user to organization) is failing.
+
+**From organization.tsx handleSubmit function (lines 71-78):**
+```javascript
+const { error: updateError } = await supabase
+  .from('users')
+  .update({ 
+    organization_id: data.id,
+    role: 'admin' 
+  })
+  .eq('id', user.id);
+```
+
+**Potential Failure Points:**
+1. ❌ User session not persisting after signup (await supabase.auth.getUser() returns null)
+2. ❌ Timing issue - session not established when organization screen loads
+3. ❌ RLS policies blocking user update
+4. ❌ Silent failure - updateError exists but not shown to user
+
+### Testing Status
+
+**Login Functionality:**
+- ⚠️ NOT YET TESTED - Login page loads but authentication not attempted
+- 📋 NEED TO TEST: Login with valid credentials (david+test@parlorfi.com)
+- 📋 NEED TO TEST: Login with invalid credentials (should show error)
+- ✅ Code review: Login.tsx security fix from Dec 26 appears correct
+
+**Organization Creation:**
+- ❌ FAILING - Organizations created but users not linked
+- 🔍 DEBUGGING NEEDED - Check why user update fails
+- 📋 NEED TO ADD: Better error logging for user update failure
+
+### Next Steps (Step A: Debug & Fix)
+
+**Priority 1: Fix User-Organization Linking**
+1. Add detailed error logging to organization.tsx user update section
+2. Check if updateError has details about why linking fails
+3. Verify RLS policies allow user to update own record
+4. Add session validation before organization creation
+5. Consider adding retry logic if session not ready
+
+**Priority 2: Test Complete Login Flow**
+1. Test login with david+test@parlorfi.com / Testing123!
+2. Verify session persistence after login
+3. Confirm navigation to /(tabs) works
+4. Test invalid credentials show proper error
+
+**Priority 3: Test Complete Signup Flow**
+1. Create new test user account
+2. Complete organization creation  
+3. Verify user gets linked to organization
+4. Verify user.role set to 'admin'
+5. Confirm successful navigation to main app
+
+### Files Requiring Attention
+
+**app/(auth)/signup/organization.tsx:**
+- Line 71-83: Add comprehensive error logging for user update
+- Line 65-68: Add session validation check
+- Consider adding Alert.alert for updateError to make failures visible
+
+**app/(auth)/login.tsx:**
+- Test current implementation (security fix from Dec 26)
+- Verify session creates properly on login
+- Confirm navigation logic works
+
+### Current Code Status
+
+✅ Login security fix (Dec 26) - COMMITTED
+✅ Organization creation logic - WORKING (creates orgs)
+❌ User-organization linking - FAILING (silent failure)
+⚠️ Error visibility - PARTIALLY IMPLEMENTED (needs updateError logging)
+
+### Action Plan
+
+**IMMEDIATE:**
+1. Test login functionality (verify Dec 26 security fix works)
+2. Add error logging for user update failure in organization.tsx
+3. Test signup flow end-to-end with new test account
+4. Document exact error messages from failed linking
+
+**FOLLOW-UP:**
+1. Implement route protection (from Dec 26 security audit)
+2. Add session persistence improvements
+3. Create user tutorial for app onboarding
+
+### Notes for User
+
+**Current State:**
+- Login security was fixed on Dec 26 ✅
+- Organization creation works ✅  
+- User-organization linking fails ❌
+- Need to test login and identify linking failure cause
+
+**What to Test:**
+1. Pull latest code: `git pull origin main`
+2. Restart Expo server
+3. Test login with: david+test@parlorfi.com / Testing123!
+4. Report if login works and what errors appear
+5. If login works, test creating new organization
+6. Check browser console for errors
+
+**Status:** INVESTIGATION COMPLETE - READY FOR DEBUGGING SESSION
 - Code now compiles without errors
 - Ready to test organization creation with visible error alerts
