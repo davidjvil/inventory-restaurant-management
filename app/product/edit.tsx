@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { supabase } from '@/app/lib/supabase';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { Toast } from '@/app/components/Toast';
-import { useToast } from '@/app/hooks/useToast';
-import { COLORS } from '@/app/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { COLORS } from '@/constants/colors';
 
 export default function EditProductScreen() {
   const router = useRouter();

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/app/constants/colors';
+import { COLORS } from '@/constants/colors';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 

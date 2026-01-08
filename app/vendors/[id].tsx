@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { supabase } from '@/app/lib/supabase';
-import { Card } from '@/app/components/Card';
-import { Button } from '@/app/components/Button';
-import { Toast } from '@/app/components/Toast';
-import { useToast } from '@/app/hooks/useToast';
-import { COLORS } from '@/app/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function VendorDetailScreen() {

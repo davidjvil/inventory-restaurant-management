@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { COLORS } from '@/app/constants/colors';
-import { IMAGES } from '@/app/constants/images';
-import { supabase } from '@/app/lib/supabase';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { COLORS } from '@/constants/colors';
+import { IMAGES } from '@/constants/images';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -14,16 +14,21 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleLogin = async () => {
+    console.log('[Login] Button pressed');
     if (!email || !password) {
+      console.log('[Login] Validation failed - empty fields');
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
+    console.log('[Login] Calling Supabase with email:', email);
     setLoading(true);
     try {
       // SECURITY FIX: Capture auth response and validate before routing
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
+      console.log('[Login] Supabase response:', { data, error });
+
       // CRITICAL: Check if authentication succeeded
       if (error) {
         throw error;
@@ -34,10 +39,11 @@ export default function LoginScreen() {
         throw new Error('Authentication failed - no session created');
       }
       
+      console.log('[Login] SUCCESS! Navigating to tabs...');
       // Only navigate to main app if authentication succeeded
       router.replace('/(tabs)');
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('[Login] ERROR:', error);
       Alert.alert('Login Failed', error.message || 'Invalid credentials');
     } finally {
       setLoading(false);

@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { supabase } from '@/app/lib/supabase';
-import { Button } from '@/app/components/Button';
-import { Toast } from '@/app/components/Toast';
-import { useToast } from '@/app/hooks/useToast';
-import { COLORS } from '@/app/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/Button';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function BarcodeScannerScreen() {

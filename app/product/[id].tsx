@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { supabase } from '@/app/lib/supabase';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { Card } from '@/app/components/Card';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { StatusBadge } from '@/app/components/StatusBadge';
-import { Toast } from '@/app/components/Toast';
-import { useToast } from '@/app/hooks/useToast';
-import { COLORS } from '@/app/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { logAction } from '@/lib/audit';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card } from '@/components/Card';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { StatusBadge } from '@/components/StatusBadge';
+import { COLORS } from '@/constants/colors';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -42,22 +41,35 @@ export default function ProductDetailScreen() {
     setLoading(true);
     try {
       const newQty = parseFloat(quantity);
-      
+      const oldQty = product.quantity_on_hand;
+
       // Update quantity
       await supabase
         .from('store_products')
-        .update({ 
+        .update({
           quantity_on_hand: newQty,
           last_inventory_check: new Date().toISOString()
         })
         .eq('id', product.id);
 
-      // Log inventory check
+      // Log inventory check (Legacy table, keep for now)
       await supabase.from('inventory_checks').insert({
         store_product_id: product.id,
         user_id: user?.id,
-        previous_quantity: product.quantity_on_hand,
+        previous_quantity: oldQty,
         new_quantity: newQty,
+      });
+
+      // [NEW] Audit Log
+      await logAction({
+        action: 'update_inventory',
+        entityType: 'store_product',
+        entityId: product.id,
+        changes: {
+          previous_quantity: oldQty,
+          new_quantity: newQty,
+          product_name: product.product?.name
+        }
       });
 
       // Check if alert needed
@@ -89,9 +101,9 @@ export default function ProductDetailScreen() {
         <Image source={{ uri: product.product?.image_url }} style={styles.image} />
         <Text style={styles.name}>{product.product?.name}</Text>
         <Text style={styles.sku}>SKU: {product.product?.sku}</Text>
-        <StatusBadge 
-          status={product.quantity_on_hand <= (product.reorder_threshold || 0) ? 'critical' : 'healthy'} 
-          label={product.quantity_on_hand <= (product.reorder_threshold || 0) ? 'Low Stock' : 'In Stock'} 
+        <StatusBadge
+          status={product.quantity_on_hand <= (product.reorder_threshold || 0) ? 'critical' : 'healthy'}
+          label={product.quantity_on_hand <= (product.reorder_threshold || 0) ? 'Low Stock' : 'In Stock'}
         />
       </Card>
 

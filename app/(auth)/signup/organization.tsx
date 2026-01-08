@@ -3,16 +3,16 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Ale
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import { supabase } from '@/app/lib/supabase';
-import { COLORS } from '@/app/constants/colors';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { useToast } from '@/app/hooks/useToast';
+import { supabase } from '@/lib/supabase';
+import { COLORS } from '@/constants/colors';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { useToast } from '@/hooks/useToast';
 
 
 export default function OrganizationScreen() {
   const router = useRouter();
-    const params = useLocalSearchParams();
+  const params = useLocalSearchParams();
   const orgType = params.orgType as string;
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function OrganizationScreen() {
   const validateForm = () => {
     if (!formData.name || formData.name.length < 2) {
       showToast('Organization name must be at least 2 characters', 'error');
-            Alert.alert('Validation Error', 'Organization name must be at least 2 characters');
+      Alert.alert('Validation Error', 'Organization name must be at least 2 characters');
       return false;
     }
     if (!formData.phone || formData.phone.length < 10) {
@@ -45,7 +45,7 @@ export default function OrganizationScreen() {
   };
 
   const handleSubmit = async () => {
-        console.log('🔥 handleSubmit function called');
+    console.log('🔥 handleSubmit function called');
     if (!validateForm()) return;
 
     // Check for duplicate organization name
@@ -70,63 +70,48 @@ export default function OrganizationScreen() {
         console.error('Error checking for duplicate organization:', error);
       }
     }
-    
-    try {
 
-          console.log('🔥 handleSubmit called! Form data:', formData);
-    setLoading(true);
-      const { data, error } = await supabase.from('organizations').insert({
-        name: formData.name,
+    try {
+      console.log('🔥 handleSubmit called! Form data:', formData);
+      setLoading(true);
+
+      // Call the atomic RPC function
+      // This creates the organization AND links the user in a single transaction
+      const { data: orgId, error } = await supabase.rpc('create_organization_and_link_user', {
+        org_name: formData.name,
         business_type: formData.businessType,
         phone: formData.phone,
         address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        subscription_tier: 'trial',
-      }).select().single();
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC Error:', error);
+        throw error;
+      }
 
-        // Get authenticated user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-                throw new Error('User not authenticated');
-              }
-
-          const { error: updateError } = await supabase
-            .from('users')
-            .update({ 
-                        organization_id: data.id,
-              
-              role: 'admin' 
-            })
-            .eq('id', user.id);
-
-          if (updateError) {
-            console.error('Failed to link user to organization:', updateError);
-            throw new Error('Failed to link user to organization');
-                }
       showToast('Organization created successfully!', 'success');
-                  router.push('/(tabs)');  // Route to main app
+      // Force a session refresh to ensure the new claims (organization_id) are present
+      await supabase.auth.refreshSession();
+      router.push('/(tabs)');  // Route to main app
 
-  
-
-      } catch (error) {
-      console.error('Organization creation error:', error);
-          console.error('Full error object:', JSON.stringify(error, null, 2));
-          console.error('Error name:', error?.name);
-          console.error('Error message:', error?.message);
-          console.error('Error stack:', error?.stack);
+    } catch (err: any) {
+      console.error('Organization creation error:', err);
+      console.error('Full error object:', JSON.stringify(err, null, 2));
+      console.error('Error name:', err?.name);
+      console.error('Error message:', err?.message);
+      console.error('Error stack:', err?.stack);
       showToast(
-        error instanceof Error ? error.message : 'Failed to create organization',
+        err instanceof Error ? err.message : 'Failed to create organization',
         'error'
-    );
-              Alert.alert(
+      );
+      Alert.alert(
         'Organization Creation Failed',
-        error instanceof Error ? error.message : 'Failed to create organization. Please check console for details.'
+        err instanceof Error ? err.message : 'Failed to create organization. Please check console for details.'
       );
     } finally {
-        setLoading(false);
-          }
-      };
+      setLoading(false);
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -140,7 +125,7 @@ export default function OrganizationScreen() {
         <Text style={styles.subtitle}>Tell us about your business</Text>
 
         <Input label="Organization Name" placeholder="e.g., Parlor Doughnuts" value={formData.name} onChangeText={(text) => setFormData({ ...formData, name: text })} />
-        
+
         <Text style={styles.label}>Business Type</Text>
         <View style={styles.pickerContainer}>
           <Picker selectedValue={formData.businessType} onValueChange={(value) => setFormData({ ...formData, businessType: value })}>
@@ -157,7 +142,7 @@ export default function OrganizationScreen() {
         <Input label="Address" placeholder="123 Main St" value={formData.address} onChangeText={(text) => setFormData({ ...formData, address: text })} />
         <Input label="City" placeholder="Orlando" value={formData.city} onChangeText={(text) => setFormData({ ...formData, city: text })} />
         <Input label="State" placeholder="FL" value={formData.state} onChangeText={(text) => setFormData({ ...formData, state: text })} maxLength={2} autoCapitalize="characters" />
-        <Input label="Zip Code" placeholder="32801" value={formData.zipCode} onChangeText={(text) => setFormData({ ...formData, zipCode: text })} keyboardType="number-pad" maxLength={5} />
+        <Input label="Zip Code" placeholder="32801" value={formData.zipCode} onChangeText={(text) => setFormData({ ...formData, zipCode: text })} keyboardType="numeric" maxLength={5} />
 
         <Button title={loading ? 'Creating...' : 'Create Organization'} onPress={handleSubmit} disabled={loading} style={{ marginTop: 24 }} />
       </ScrollView>
@@ -173,7 +158,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: 'bold', color: COLORS.text.primary, marginBottom: 8 },
   subtitle: { fontSize: 16, color: COLORS.text.secondary, marginBottom: 24 },
   label: { fontSize: 14, fontWeight: '600', color: COLORS.text.primary, marginBottom: 8, marginTop: 16 },
-  pickerContainer: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.card , minHeight: 56},
+  pickerContainer: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.card, minHeight: 56 },
 });
 
 

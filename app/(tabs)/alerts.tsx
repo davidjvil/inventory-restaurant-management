@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { supabase } from '@/app/lib/supabase';
-import { Card } from '@/app/components/Card';
-import { StatusBadge } from '@/app/components/StatusBadge';
-import { COLORS } from '@/app/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { Card } from '@/components/Card';
+import { StatusBadge } from '@/components/StatusBadge';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AlertsScreen() {

@@ -1,60 +1,84 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { supabase } from '@/app/lib/supabase';
-import { Card } from '@/app/components/Card';
-import { StatusBadge } from '@/app/components/StatusBadge';
-import { COLORS } from '@/app/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { Card } from '@/components/Card';
+import { StatusBadge } from '@/components/StatusBadge';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 
 export default function DashboardScreen() {
   const router = useRouter();
 
   const { user } = useAuth();
-  const [stats, setStats] = useState({ totalProducts: 0, lowStock: 0, pendingOrders: 0, totalValue: 0 });
-  const [refreshing, setRefreshing] = useState(false);
+  const storeId = user?.assigned_store_ids?.[0];
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const { data: stats, isLoading, refetch, isRefetching } = useQuery({
+    queryKey: ['dashboardStats', storeId],
+    queryFn: async () => {
+      if (!storeId) return { totalProducts: 0, lowStock: 0, pendingOrders: 0, totalValue: 0 };
 
-  const fetchDashboardData = async () => {
-    if (!user) return;
+      // 1. Try Fast RPC
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_dashboard_stats', { target_store_id: storeId });
 
-    const { data: products } = await supabase
-      .from('store_products')
-      .select('*, product:master_products(base_price)')
-      .eq('store_id', user.assigned_store_ids?.[0] || '');
+      if (!rpcError && rpcData && rpcData.length > 0) {
+        return {
+          totalProducts: rpcData[0].total_products,
+          lowStock: rpcData[0].low_stock,
+          pendingOrders: rpcData[0].pending_orders,
+          totalValue: rpcData[0].total_value
+        };
+      }
 
-    const lowStock = products?.filter(p => p.quantity_on_hand <= (p.reorder_threshold || 0)).length || 0;
-    const totalValue = products?.reduce((sum, p) => sum + (p.quantity_on_hand * (p.product?.base_price || 0)), 0) || 0;
+      console.warn('Dashboard RPC failed/missing, using fallback calculation:', rpcError?.message);
 
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('status', 'pending');
+      // 2. Slow Fallback (Client-side calculation)
+      const { data: products } = await supabase
+        .from('store_products')
+        .select('*, product:master_products(base_price)')
+        .eq('store_id', storeId);
 
-    setStats({
-      totalProducts: products?.length || 0,
-      lowStock,
-      pendingOrders: orders?.length || 0,
-      totalValue,
-    });
-  };
+      const lowStock = products?.filter(p => p.quantity_on_hand <= (p.reorder_threshold || 0)).length || 0;
+      const totalValue = products?.reduce((sum, p) => sum + (p.quantity_on_hand * (p.product?.base_price || 0)), 0) || 0;
+
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('status', 'pending');
+
+      return {
+        totalProducts: products?.length || 0,
+        lowStock,
+        pendingOrders: orders?.length || 0,
+        totalValue,
+      };
+    },
+    enabled: !!storeId,
+  });
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchDashboardData();
-    setRefreshing(false);
+    await refetch();
   };
+
+  if (isLoading && !isRefetching) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  // Default empty stats if undefined
+  const displayStats = stats || { totalProducts: 0, lowStock: 0, pendingOrders: 0, totalValue: 0 };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />}
       >
         <Text style={styles.greeting}>Hello, {user?.full_name || 'User'}!</Text>
         <Text style={styles.subtitle}>Here's your inventory overview</Text>
@@ -63,7 +87,7 @@ export default function DashboardScreen() {
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/products')}>
             <Card style={styles.statCardInner}>
               <Ionicons name="cube-outline" size={32} color={COLORS.primary} />
-              <Text style={styles.statValue}>{stats.totalProducts}</Text>
+              <Text style={styles.statValue}>{displayStats.totalProducts}</Text>
               <Text style={styles.statLabel}>Total Products</Text>
             </Card>
           </TouchableOpacity>
@@ -71,7 +95,7 @@ export default function DashboardScreen() {
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/alerts')}>
             <Card style={styles.statCardInner}>
               <Ionicons name="alert-circle-outline" size={32} color={COLORS.danger} />
-              <Text style={styles.statValue}>{stats.lowStock}</Text>
+              <Text style={styles.statValue}>{displayStats.lowStock}</Text>
               <Text style={styles.statLabel}>Low Stock</Text>
             </Card>
           </TouchableOpacity>
@@ -79,7 +103,7 @@ export default function DashboardScreen() {
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/orders')}>
             <Card style={styles.statCardInner}>
               <Ionicons name="cart-outline" size={32} color={COLORS.accent} />
-              <Text style={styles.statValue}>{stats.pendingOrders}</Text>
+              <Text style={styles.statValue}>{displayStats.pendingOrders}</Text>
               <Text style={styles.statLabel}>Pending Orders</Text>
             </Card>
           </TouchableOpacity>
@@ -87,7 +111,7 @@ export default function DashboardScreen() {
           <TouchableOpacity style={styles.statCard}>
             <Card style={styles.statCardInner}>
               <Ionicons name="cash-outline" size={32} color={COLORS.success} />
-              <Text style={styles.statValue}>${stats.totalValue.toFixed(0)}</Text>
+              <Text style={styles.statValue}>${displayStats.totalValue.toFixed(0)}</Text>
               <Text style={styles.statLabel}>Inventory Value</Text>
             </Card>
           </TouchableOpacity>

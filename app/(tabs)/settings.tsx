@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { Card } from '@/app/components/Card';
-import { Button } from '@/app/components/Button';
-import { AlertDialog } from '@/app/components/AlertDialog';
-import { COLORS } from '@/app/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
+import { AlertDialog } from '@/components/AlertDialog';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SettingsScreen() {

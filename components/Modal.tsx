@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal as RNModal, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/app/constants/colors';
+import { COLORS } from '@/constants/colors';
 
 const { height } = Dimensions.get('window');
 

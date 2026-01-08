@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/app/lib/supabase';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { Card } from '@/app/components/Card';
-import { Toast } from '@/app/components/Toast';
-import { useToast } from '@/app/hooks/useToast';
-import { COLORS } from '@/app/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { COLORS } from '@/constants/colors';
 import { Picker } from '@react-native-picker/picker';
 
 export default function AddUserScreen() {

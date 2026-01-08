@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/app/lib/supabase';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { Card } from '@/app/components/Card';
-import { Button } from '@/app/components/Button';
-import { StatusBadge } from '@/app/components/StatusBadge';
-import { Toast } from '@/app/components/Toast';
-import { useToast } from '@/app/hooks/useToast';
-import { COLORS } from '@/app/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
+import { StatusBadge } from '@/components/StatusBadge';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function UsersScreen() {

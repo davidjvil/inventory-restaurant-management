@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '@/app/lib/supabase';
-import { COLORS } from '@/app/constants/colors';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { useToast } from '@/app/hooks/useToast';
+import { supabase } from '@/lib/supabase';
+import { COLORS } from '@/constants/colors';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 
 export default function CreateAccountScreen() {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast, visible, message, type, hide } = useToast();
   const params = useLocalSearchParams();
-    const orgType = params.orgType as string;
-  const isNewOrg = orgType === 'new';  
+  const orgType = params.orgType as string;
+  const isNewOrg = orgType === 'new';
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -60,34 +61,42 @@ export default function CreateAccountScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    console.log('[Signup] Button pressed - starting validation...');
+    if (!validateForm()) {
+      console.log('[Signup] Validation failed');
+      return;
+    }
 
+    console.log('[Signup] Validation passed. Calling Supabase...');
     setLoading(true);
     try {
       // Create auth user
+      console.log('[Signup] Calling supabase.auth.signUp with email:', formData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-              options: {
-        data: {
-          full_name: `${formData.firstName} ${formData.lastName}`,
-          phone: formData.phone || null,
-          terms_accepted: formData.termsAccepted,
+        options: {
+          data: {
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            phone: formData.phone || null,
+            terms_accepted: formData.termsAccepted,
+          }
         }
-      }
       });
+
+      console.log('[Signup] Supabase response:', { authData, authError });
 
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to create user');
 
-
       // User profile is automatically created by database trigger
       // No manual profile creation needed
+      console.log('[Signup] SUCCESS! Navigating to organization page...');
       showToast('Account created successfully!', 'success');
-    router.push(`/signup/organization?orgType=${orgType}`);
-        } catch (error: any) {
-    console.error('Signup error:', error);
-    showToast(error.message || 'Database error saving new user', 'error');
+      router.push(`/signup/organization?orgType=${orgType}`);
+    } catch (error: any) {
+      console.error('[Signup] ERROR:', error);
+      showToast(error.message || 'Database error saving new user', 'error');
     } finally {
       setLoading(false);
     }
@@ -99,6 +108,7 @@ export default function CreateAccountScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Toast visible={visible} message={message} type={type} onHide={hide} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />

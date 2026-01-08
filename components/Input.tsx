@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
-import { COLORS } from '@/app/constants/colors';
+import { COLORS } from '@/constants/colors';
 
 interface InputProps {
   label?: string;

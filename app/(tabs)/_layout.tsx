@@ -1,10 +1,24 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { COLORS } from '@/app/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { COLORS } from '@/constants/colors';
+import { ActivityIndicator, View } from 'react-native';
 
 export default function TabLayout() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   const isAdminOrManager = user?.role === 'admin' || user?.role === 'store_manager';
 
   return (

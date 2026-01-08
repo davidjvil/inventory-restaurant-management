@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/app/lib/supabase';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { COLORS } from '@/app/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { logAction } from '@/lib/audit'; // [NEW]
+import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { COLORS } from '@/constants/colors';
 
 export default function AddProductScreen() {
   const { user } = useAuth();
@@ -18,8 +19,8 @@ export default function AddProductScreen() {
   const [unit, setUnit] = useState('');
   const [price, setPrice] = useState('');
   const [threshold, setThreshold] = useState('');
-    const [minimumOrderAmount, setMinimumOrderAmount] = useState('');
-    const [parLevel, setParLevel] = useState('');
+  const [minimumOrderAmount, setMinimumOrderAmount] = useState('');
+  const [parLevel, setParLevel] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -30,7 +31,8 @@ export default function AddProductScreen() {
 
     setLoading(true);
     try {
-      if (user?.role === 'admin' || user?.role === 'shop_manager') {
+      if (user?.role === 'admin' || user?.role === 'store_manager') {
+        // 1. Create Master Product
         const { data: masterProduct, error: masterError } = await supabase
           .from('master_products')
           .insert({
@@ -48,13 +50,24 @@ export default function AddProductScreen() {
 
         if (masterError) throw masterError;
 
-        await supabase.from('store_products').insert({
+        // 2. Create Store Product Entry
+        const { error: storeError } = await supabase.from('store_products').insert({
           store_id: user.assigned_store_ids?.[0],
           product_id: masterProduct.id,
           quantity_on_hand: 0,
           reorder_threshold: parseFloat(threshold) || 0,
-                minimum_order_amount: parseFloat(minimumOrderAmount) || 0,
-                      par_level: parseFloat(parLevel) || 0,
+          minimum_order_amount: parseFloat(minimumOrderAmount) || 0,
+          par_level: parseFloat(parLevel) || 0,
+        });
+
+        if (storeError) throw storeError;
+
+        // 3. [NEW] Audit Log
+        await logAction({
+          action: 'create_product',
+          entityType: 'master_product',
+          entityId: masterProduct.id,
+          changes: { name, sku, category, price }
         });
       }
 
@@ -108,22 +121,21 @@ export default function AddProductScreen() {
         placeholder="0"
       />
 
-              <Input
-                        label="Minimum Order Amount"
-                        value={minimumOrderAmount}
-                        onChangeText={setMinimumOrderAmount}
-                        keyboardType="numeric"
-                        placeholder="0"
-                      />
+      <Input
+        label="Minimum Order Amount"
+        value={minimumOrderAmount}
+        onChangeText={setMinimumOrderAmount}
+        keyboardType="numeric"
+        placeholder="0"
+      />
 
-            <Input
+      <Input
         label="Par Level"
         value={parLevel}
         onChangeText={setParLevel}
         keyboardType="numeric"
         placeholder="0"
       />
-              
 
       <Input
         label="Category"
@@ -147,7 +159,7 @@ export default function AddProductScreen() {
       />
 
       <Button title="Add Product" onPress={handleSubmit} loading={loading} />
-      <Button title="Cancel" onPress={() => router.back()} variant="secondary" />
+      <Button title="Cancel" onPress={router.back} variant="secondary" />
     </ScrollView>
   );
 }
@@ -155,5 +167,5 @@ export default function AddProductScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: 24, paddingTop: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text_primary, marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text.primary, marginBottom: 16 },
 });

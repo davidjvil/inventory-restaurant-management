@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { supabase } from '@/app/lib/supabase';
-import { Card } from '@/app/components/Card';
-import { Button } from '@/app/components/Button';
-import { COLORS } from '@/app/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ReportsScreen() {

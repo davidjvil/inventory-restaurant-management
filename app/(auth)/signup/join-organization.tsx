@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '@/app/lib/supabase';
-import { COLORS } from '@/app/constants/colors';
-import { Input } from '@/app/components/Input';
-import { Button } from '@/app/components/Button';
-import { useToast } from '@/app/hooks/useToast';
+import { supabase } from '@/lib/supabase';
+import { COLORS } from '@/constants/colors';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { useToast } from '@/hooks/useToast';
 
 export default function JoinOrganizationScreen() {
   const router = useRouter();

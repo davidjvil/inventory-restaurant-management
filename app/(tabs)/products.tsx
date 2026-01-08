@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { supabase } from '@/app/lib/supabase';
-import { Card } from '@/app/components/Card';
-import { StatusBadge } from '@/app/components/StatusBadge';
-import { COLORS } from '@/app/constants/colors';
-import { StoreProduct } from '@/app/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { Card } from '@/components/Card';
+import { StatusBadge } from '@/components/StatusBadge';
+import { COLORS } from '@/constants/colors';
+import { StoreProduct } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 export default function ProductsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchProducts();
@@ -21,13 +24,16 @@ export default function ProductsScreen() {
 
   const fetchProducts = async () => {
     if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('store_products')
+        .select('*, product:master_products(*)')
+        .eq('store_id', user.assigned_store_ids?.[0] || '');
 
-    const { data } = await supabase
-      .from('store_products')
-      .select('*, product:master_products(*)')
-      .eq('store_id', user.assigned_store_ids?.[0] || '');
-
-    if (data) setProducts(data);
+      if (data) setProducts(data);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onRefresh = async () => {
@@ -36,7 +42,7 @@ export default function ProductsScreen() {
     setRefreshing(false);
   };
 
-  const getStockStatus = (item: any) => {
+  const getStockStatus = (item: any): { status: 'healthy' | 'warning' | 'critical', label: string } => {
     const qty = item.quantity_on_hand;
     const threshold = item.reorder_threshold || 0;
     if (qty <= threshold) return { status: 'critical', label: 'Critical' };
@@ -46,7 +52,7 @@ export default function ProductsScreen() {
 
   const renderProduct = ({ item }: { item: any }) => {
     const stockStatus = getStockStatus(item);
-    
+
     return (
       <Card style={styles.productCard} onPress={() => router.push(`/product/${item.id}`)}>
         <View style={styles.productRow}>
@@ -64,6 +70,26 @@ export default function ProductsScreen() {
       </Card>
     );
   };
+
+  if (loading && products.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.list}>
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} style={styles.productCard}>
+              <View style={styles.productRow}>
+                <SkeletonLoader width={60} height={60} borderRadius={8} style={{ marginRight: 12 }} />
+                <View style={{ flex: 1, gap: 8 }}>
+                  <SkeletonLoader width="70%" height={20} />
+                  <SkeletonLoader width="40%" height={16} />
+                </View>
+              </View>
+            </Card>
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
